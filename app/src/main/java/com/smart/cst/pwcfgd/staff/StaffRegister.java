@@ -144,7 +144,6 @@ public class StaffRegister extends AppCompatActivity implements Imageutils.Image
                         contact.getText().toString().length() > 0 &&
                         address.getText().toString().length() > 0 &&
                         designation.getText().toString().length() > 0 &&
-                        department.getText().toString().length() > 0 &&
                         password.getText().toString().length() > 0 &&
                         confirmPass.getText().toString().length() > 0) {
 

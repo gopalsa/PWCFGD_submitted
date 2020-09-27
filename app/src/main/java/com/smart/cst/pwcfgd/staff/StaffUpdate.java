@@ -152,7 +152,6 @@ public class StaffUpdate extends AppCompatActivity implements Imageutils.ImageAt
                         contact.getText().toString().length() > 0 &&
                         address.getText().toString().length() > 0 &&
                         designation.getText().toString().length() > 0 &&
-                        department.getText().toString().length() > 0 &&
                         password.getText().toString().length() > 0 &&
                         confirmPass.getText().toString().length() > 0) {
 
@@ -190,7 +189,7 @@ public class StaffUpdate extends AppCompatActivity implements Imageutils.ImageAt
             graduate.setText(staff.graduate);
             specialization.setText(staff.specialization);
             confirmPass.setText(staff.confirmpassword);
-            department.setText(staff.department);
+           // department.setText(staff.department);
             gmail.setText(staff.gmail);
             imageUrl = staff.getImage();
 
@@ -336,8 +335,11 @@ public class StaffUpdate extends AppCompatActivity implements Imageutils.ImageAt
                 File sourceFile = new File(filepath);
                 // Adding file data to http body
                 entity.addPart("image", new FileBody(sourceFile));
-                entity.addPart("oldimg", new StringBody(imageutils.getfilename_from_path(imageUrl)));
-
+                try {
+                    entity.addPart("oldimg", new StringBody(imageutils.getfilename_from_path(imageUrl)));
+                }catch (Exception e){
+                    Log.e("xxxxxxxxxxx",e.toString());
+                }
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
 

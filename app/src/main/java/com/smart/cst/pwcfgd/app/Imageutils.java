@@ -388,6 +388,8 @@ public class Imageutils {
                 permission_check(3);
         } else {
             Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT,7);
             if (takeVideoIntent.resolveActivity(current_activity.getPackageManager()) != null) {
                 current_activity.startActivityForResult(takeVideoIntent, 3);
             }
@@ -504,6 +506,8 @@ public class Imageutils {
             galley_call();
         } else if (code == 3) {
             Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT,7);
             if (takeVideoIntent.resolveActivity(current_activity.getPackageManager()) != null) {
                 current_activity.startActivityForResult(takeVideoIntent, 3);
             }
@@ -557,6 +561,8 @@ public class Imageutils {
             galley_call();
         } else if (code == 3) {
             Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+            takeVideoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT,7);
             if (takeVideoIntent.resolveActivity(current_activity.getPackageManager()) != null) {
                 current_activity.startActivityForResult(takeVideoIntent, 3);
             }

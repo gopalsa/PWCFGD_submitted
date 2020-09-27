@@ -1,0 +1,89 @@
+{
+  "KRISHNA": {
+    "Nuzvid": [
+      "Pallerlamudi",
+      "Seetharamapuram",
+      "Marribandham",
+      "Mokasa Narassannapalem",
+      "Meerjapuram",
+      "Gollapalle",
+      "Vempadu",
+      "Devaragunta",
+      "Morsapudi",
+      "Polasanpalli"
+    ],
+    "Bapulapadu": [
+      "Mallavalli",
+      "Singannagudem",
+      "Remalle",
+      "Rangannagudem",
+      "Bommuluru",
+      "Koyyur",
+      "Madicherla",
+      "Billanapalle",
+      "Kothapalli"
+    ],
+    "Agiripalli": [
+      "Suravaram",
+      "Krishnavaram",
+      "Sagguru",
+      "Kalaturu",
+      "Narasingapalem",
+      "Ananthasagaram",
+      "Edulagudem",
+      "Tadepalle",
+      "Vadlamanu",
+      "Vattigudipadu",
+      "Chopparametla"
+    ]
+  },
+  "GUNTUR":{
+    "Piduguralla":[
+      "Guttikonda",
+      "Julakallu",
+      "Chinna Agraharam",
+      "Peda Agraharam",
+      "Karalapadu",
+      "Janapadu"
+    ],
+    "Bellamkonda":[
+      "Vannayapalem",
+      "Machayapalem",
+      "Chandrajupalem",
+      "Mannesultanpalem",
+      "Papayapalem"
+    ],
+    "Machavaram":[
+      "Mallavolu",
+      "Pillutla",
+      "Srirukminipuram"
+    ],
+    "Rajupalem":[
+      "Uppalpadu",
+      "Balijepalle",
+      "Ganapavaram",
+      "Nemalippuri",
+      "Kubadpuram",
+      "Chowtapapayepalem"
+    ]
+  },
+  "PRAKASAM":{
+    "Ballikurava":[
+      "Vaidina",
+      "Guntupalle",
+      "Muktheswaram",
+      "Vallapalle",
+      "Konidena",
+      "Vemavaram",
+      "Uppumaguluru"
+    ],
+    "Marturu":[
+      "Bobbe Palle",
+      "Dronadula",
+      "Kolala Pudi",
+      "Nagaraju Palle",
+      "Darsiagraharam",
+      "Valaparla"
+    ]
+  }
+}

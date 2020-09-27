@@ -124,9 +124,9 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:hint="Username/Contact"
+                                android:hint="Contact"
                                 android:inputType="textCapWords"
-                                android:text=""
+                                android:text="9080593193"
                                 android:textColorHint="#ffc6c6c6"
                                 android:textSize="18.0dip" />
                         </android.support.design.widget.TextInputLayout>
@@ -160,7 +160,7 @@
                                 android:layout_gravity="center"
                                 android:hint="Password"
                                 android:inputType="textPassword"
-                                android:text=""
+                                android:text="1234"
                                 android:textColorHint="#ffc6c6c6"
                                 android:textSize="18.0dip" />
                         </android.support.design.widget.TextInputLayout>

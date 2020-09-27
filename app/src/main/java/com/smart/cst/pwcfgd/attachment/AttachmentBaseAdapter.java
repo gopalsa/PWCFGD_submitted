@@ -73,12 +73,21 @@ public class AttachmentBaseAdapter extends RecyclerView.Adapter<AttachmentBaseAd
                     .into(holder.image);
             holder.cancelImg.setVisibility(View.GONE);
         } else {
-            holder.cancelImg.setVisibility(View.VISIBLE);
-            GlideApp.with(mainActivityUser).load("http://" + bean.url)
-                    .dontAnimate()
-                    .thumbnail(0.5f)
-                    .placeholder(R.drawable.file)
-                    .into(holder.image);
+            if( bean.url.startsWith("coconut")) {
+                holder.cancelImg.setVisibility(View.VISIBLE);
+                GlideApp.with(mainActivityUser).load( "http://" + bean.url)
+                        .dontAnimate()
+                        .thumbnail(0.5f)
+                        .placeholder(R.drawable.file)
+                        .into(holder.image);
+            }else {
+                holder.cancelImg.setVisibility(View.VISIBLE);
+                GlideApp.with(mainActivityUser).load( bean.url)
+                        .dontAnimate()
+                        .thumbnail(0.5f)
+                        .placeholder(R.drawable.file)
+                        .into(holder.image);
+            }
         }
         holder.image.setOnClickListener(new View.OnClickListener() {
             @Override

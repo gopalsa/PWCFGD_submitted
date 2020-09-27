@@ -3,7 +3,7 @@
     android:id="@+id/splashScreen"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/pwcfgd"
+    android:background="@drawable/pwcsplash"
     android:orientation="vertical">
 
     <LinearLayout
@@ -31,17 +31,27 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="right"
-                android:src="@drawable/logo1" />
+                android:src="@drawable/aplogo" />
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center"
-                android:src="@drawable/pwcimgs" />
+                android:src="@drawable/pwcicon" />
 
 
         </RelativeLayout>
-
+        <TextView
+            android:id="@+id/editText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:fontFeatureSettings="smcp"
+            android:text="Smart FGD"
+            android:textColor="@color/colorPrimary"
+            android:textSize="35sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -54,17 +64,7 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/editText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:fontFeatureSettings="smcp"
-            android:text="Smart PWC FGD"
-            android:textColor="#fff"
-            android:textSize="35sp"
-            android:textStyle="bold" />
+
 
         <LinearLayout
             android:layout_width="wrap_content"

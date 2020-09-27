@@ -23,7 +23,7 @@ public class MasterAllFGDSurveyAdapter extends RecyclerView.Adapter<MasterAllFGD
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView name,tdate,location;
+        private TextView name,tdate,location,date;
         ImageView editImage, locationImage;
         LinearLayout parentLinear;
 
@@ -32,6 +32,7 @@ public class MasterAllFGDSurveyAdapter extends RecyclerView.Adapter<MasterAllFGD
             name = (TextView) view.findViewById(R.id.name);
             tdate = (TextView) view.findViewById(R.id.tdate);
             location = (TextView) view.findViewById(R.id.location);
+            date = (TextView) view.findViewById(R.id.date);
             parentLinear = (LinearLayout) view.findViewById(R.id.parentLinear);
         }
     }
@@ -61,9 +62,10 @@ public class MasterAllFGDSurveyAdapter extends RecyclerView.Adapter<MasterAllFGD
     @Override
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         FGDNewBean mainFGD = moviesList.get(position);
-        holder.name.setText(mainFGD.getMemberName());
-        holder.tdate.setText(mainFGD.getSex());
-        holder.location.setText(mainFGD.getMobile());
+        holder.name.setText(mainFGD.getVillage());
+        holder.tdate.setText(mainFGD.getGramPanchayat());
+        holder.location.setText(mainFGD.getMandal());
+        holder.date.setText(mainFGD.getDateOfFGD());
 
         if (position % 2 == 0) {
             holder.parentLinear.setBackgroundColor(mainActivityUser.getResources().getColor(R.color.viewBg));

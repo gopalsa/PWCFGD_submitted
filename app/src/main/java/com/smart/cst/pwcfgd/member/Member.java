@@ -4,13 +4,15 @@ import java.io.Serializable;
 
 public class Member implements Serializable {
 
-    String memberName;
-    String sex;
-    String mobile;
-    String idType;
-    String farmSize;
+    public String memberImage;
+    public String memberName;
+    public String sex;
+    public String mobile;
+    public String idType;
+    public String farmSize;
 
-    public Member(String memberName, String sex, String mobile, String idType, String farmSize) {
+    public Member(String memberImage, String memberName, String sex, String mobile, String idType, String farmSize) {
+        this.memberImage = memberImage;
         this.memberName = memberName;
         this.sex = sex;
         this.mobile = mobile;
@@ -56,5 +58,13 @@ public class Member implements Serializable {
 
     public void setIdType(String idType) {
         this.idType = idType;
+    }
+
+    public String getMemberImage() {
+        return memberImage;
+    }
+
+    public void setMemberImage(String memberImage) {
+        this.memberImage = memberImage;
     }
 }

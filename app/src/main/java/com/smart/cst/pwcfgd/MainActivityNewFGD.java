@@ -24,26 +24,31 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.gson.Gson;
 import com.smart.cst.pwcfgd.app.AndroidMultiPartEntity;
 import com.smart.cst.pwcfgd.app.AppConfig;
 import com.smart.cst.pwcfgd.app.AppController;
 import com.smart.cst.pwcfgd.app.GPSTracker;
+import com.smart.cst.pwcfgd.app.GlideApp;
 import com.smart.cst.pwcfgd.app.Imageutils;
 import com.smart.cst.pwcfgd.attachment.AttachmentBaseAdapter;
 import com.smart.cst.pwcfgd.attachment.Base;
 import com.smart.cst.pwcfgd.attachment.BaseClick;
+import com.smart.cst.pwcfgd.media.ActivityAudioRecord;
 import com.smart.cst.pwcfgd.media.ActivityMediaOnline;
+import com.smart.cst.pwcfgd.media.MainActivityAudio;
 import com.smart.cst.pwcfgd.member.Member;
 import com.smart.cst.pwcfgd.member.MemberAdapter;
 import com.smart.cst.pwcfgd.member.MemberClick;
@@ -58,28 +63,37 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ru.dimorinny.floatingtextbutton.FloatingTextButton;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
-        Imageutils.ImageAttachmentListener,MemberClick {
+        Imageutils.ImageAttachmentListener, MemberClick {
 
+    private int lastMemberPosition = -1;
+    private int lastVillagePosition = -1;
     private static final int FINE_LOCATION_CODE = 199;
+
+    public TextView gpTxt;
+    public TextView districtTxt;
+    public TextView mandalTxt;
 
     public EditText nameOfSurveyor;
     public EditText dateOfFGD;
@@ -87,9 +101,10 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
     public EditText address;
     public EditText timeStarted;
     public EditText village;
-    public EditText gramPanchayat;
-    public EditText mandal;
-    public EditText district;
+    public Spinner gramPanchayat;
+    public Spinner mandal;
+    public Spinner district;
+    public CircleImageView memberImage;
     public EditText memberName;
     public EditText sex;
     public EditText mobile;
@@ -320,11 +335,21 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
 
     Imageutils imageutils;
 
+
+    DbHelperSurvey dbHelperSurvey;
+
+
+    String[] DISTRICTS = new String[10];
+    String[] MANDALS = new String[10];
+    String[] GPS = new String[10];
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_newfgd);
 
+
+        dbHelperSurvey = new DbHelperSurvey(this);
 
         imageutils = new Imageutils(this);
         TextView expand_button = (TextView) findViewById(R.id.expand_button);
@@ -389,7 +414,8 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl1 != null) {
                     intent.putExtra("url", audioUrl1);
                 }
-                startActivityForResult(intent, 1);
+                intent.putExtra("name", "Panchayat Details");
+                startActivityForResult(intent, 12);
             }
         });
         record2.setOnClickListener(new View.OnClickListener() {
@@ -399,7 +425,8 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl2 != null) {
                     intent.putExtra("url", audioUrl2);
                 }
-                startActivityForResult(intent, 2);
+                intent.putExtra("name", "Land Details");
+                startActivityForResult(intent, 13);
             }
         });
         record3.setOnClickListener(new View.OnClickListener() {
@@ -409,7 +436,8 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl3 != null) {
                     intent.putExtra("url", audioUrl3);
                 }
-                startActivityForResult(intent, 3);
+                intent.putExtra("name", "Soil Details");
+                startActivityForResult(intent, 14);
             }
         });
         record4.setOnClickListener(new View.OnClickListener() {
@@ -419,7 +447,8 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl4 != null) {
                     intent.putExtra("url", audioUrl4);
                 }
-                startActivityForResult(intent, 4);
+                intent.putExtra("name", "Water Details");
+                startActivityForResult(intent, 15);
             }
         });
         record5.setOnClickListener(new View.OnClickListener() {
@@ -429,6 +458,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl5 != null) {
                     intent.putExtra("url", audioUrl5);
                 }
+                intent.putExtra("name", "Cropping Pattern");
                 startActivityForResult(intent, 5);
             }
         });
@@ -439,6 +469,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl6 != null) {
                     intent.putExtra("url", audioUrl6);
                 }
+                intent.putExtra("name", "Agro services");
                 startActivityForResult(intent, 6);
             }
         });
@@ -449,6 +480,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl7 != null) {
                     intent.putExtra("url", audioUrl7);
                 }
+                intent.putExtra("name", "Knowledge");
                 startActivityForResult(intent, 7);
             }
         });
@@ -459,6 +491,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl8 != null) {
                     intent.putExtra("url", audioUrl8);
                 }
+                intent.putExtra("name", "Access to Finance");
                 startActivityForResult(intent, 8);
             }
         });
@@ -469,6 +502,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl9 != null) {
                     intent.putExtra("url", audioUrl9);
                 }
+                intent.putExtra("name", "Market");
                 startActivityForResult(intent, 9);
             }
         });
@@ -479,6 +513,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 if (audioUrl10 != null) {
                     intent.putExtra("url", audioUrl10);
                 }
+                intent.putExtra("name", "Livelihoods cash income");
                 startActivityForResult(intent, 10);
             }
         });
@@ -486,73 +521,77 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
         play1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl1);
+                startPlay(audioUrl1, "Panchayat Details");
             }
         });
         play2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl2);
+                startPlay(audioUrl2, "Land Details");
             }
         });
         play3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl3);
+                startPlay(audioUrl3, "Soil Details");
             }
         });
         play4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl4);
+                startPlay(audioUrl4, "Water Details");
             }
         });
         play5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl5);
+                startPlay(audioUrl5, "Cropping Pattern");
             }
         });
         play6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl6);
+                startPlay(audioUrl6, "Agro services");
             }
         });
         play7.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl7);
+                startPlay(audioUrl7, "Knowledge");
             }
         });
         play8.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl8);
+                startPlay(audioUrl8, "Access to Finance");
             }
         });
         play9.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl9);
+                startPlay(audioUrl9, "Market");
             }
         });
         play10.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPlay(audioUrl10);
+                startPlay(audioUrl10, "Livelihoods cash income");
             }
         });
 
+        districtTxt = (TextView) findViewById(R.id.districtTxt);
+        mandalTxt = (TextView) findViewById(R.id.mandalTxt);
+        gpTxt = (TextView) findViewById(R.id.gpTxt);
         nameOfSurveyor = (EditText) findViewById(R.id.nameOfSurveyor);
         dateOfFGD = (EditText) findViewById(R.id.dateOfFGD);
         geoTag = (EditText) findViewById(R.id.geoTag);
         address = (EditText) findViewById(R.id.address);
         timeStarted = (EditText) findViewById(R.id.timeStarted);
         village = (EditText) findViewById(R.id.village);
-        gramPanchayat = (EditText) findViewById(R.id.gramPanchayat);
-        mandal = (EditText) findViewById(R.id.mandal);
-        district = (EditText) findViewById(R.id.district);
+        gramPanchayat = (Spinner) findViewById(R.id.gramPanchayat);
+        mandal = (Spinner) findViewById(R.id.mandal);
+        district = (Spinner) findViewById(R.id.district);
+        memberImage = (CircleImageView) findViewById(R.id.imageview);
         memberName = (EditText) findViewById(R.id.memberName);
         sex = (EditText) findViewById(R.id.sex);
         mobile = (EditText) findViewById(R.id.mobile);
@@ -708,22 +747,22 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
 
         bases1.add(new Base(null, null));
         RecyclerView attachemnet1List = (RecyclerView) findViewById(R.id.attachemnet1List);
-        attachmentBase1Adapter = new AttachmentBaseAdapter(this, bases1, this, 1);
+        attachmentBase1Adapter = new AttachmentBaseAdapter(this, bases1, this, 12);
         attachemnet1List.setLayoutManager(new GridLayoutManager(this, 3));
         attachemnet1List.setAdapter(attachmentBase1Adapter);
         bases2.add(new Base(null, null));
         RecyclerView attachemnet2List = (RecyclerView) findViewById(R.id.attachemnet2List);
-        attachmentBase2Adapter = new AttachmentBaseAdapter(this, bases2, this, 2);
+        attachmentBase2Adapter = new AttachmentBaseAdapter(this, bases2, this, 13);
         attachemnet2List.setLayoutManager(new GridLayoutManager(this, 3));
         attachemnet2List.setAdapter(attachmentBase2Adapter);
         bases3.add(new Base(null, null));
         RecyclerView attachemnet3List = (RecyclerView) findViewById(R.id.attachemnet3List);
-        attachmentBase3Adapter = new AttachmentBaseAdapter(this, bases3, this, 3);
+        attachmentBase3Adapter = new AttachmentBaseAdapter(this, bases3, this, 14);
         attachemnet3List.setLayoutManager(new GridLayoutManager(this, 3));
         attachemnet3List.setAdapter(attachmentBase3Adapter);
         bases4.add(new Base(null, null));
         RecyclerView attachemnet4List = (RecyclerView) findViewById(R.id.attachemnet4List);
-        attachmentBase4Adapter = new AttachmentBaseAdapter(this, bases4, this, 4);
+        attachmentBase4Adapter = new AttachmentBaseAdapter(this, bases4, this, 15);
         attachemnet4List.setLayoutManager(new GridLayoutManager(this, 3));
         attachemnet4List.setAdapter(attachmentBase4Adapter);
         bases5.add(new Base(null, null));
@@ -758,18 +797,42 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
         attachemnet10List.setAdapter(attachmentBase10Adapter);
 
 
+        FloatingTextButton addMember = (FloatingTextButton) findViewById(R.id.addMember);
+        FloatingTextButton cancelMember = (FloatingTextButton) findViewById(R.id.cancelBtn);
         memberList = (RecyclerView) findViewById(R.id.memberList);
         memberAdapter = new MemberAdapter(this, memberArrayList, this);
         final LinearLayoutManager rate = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         memberList.setLayoutManager(rate);
         memberList.setAdapter(memberAdapter);
+        memberList.addOnItemTouchListener(new RecyclerTouchListener(MainActivityNewFGD.this,
+                memberList, new RecyclerTouchListener.ClickListener() {
+            public void onClick(View paramView, int paramInt) {
+                lastMemberPosition = paramInt;
+                addMember.setTitle("Update");
+                memberName.setText(memberArrayList.get(paramInt).memberName);
+                sex.setText(memberArrayList.get(paramInt).sex);
+                mobile.setText(memberArrayList.get(paramInt).mobile);
+                idType.setText(memberArrayList.get(paramInt).idType);
+                farmSize.setText(memberArrayList.get(paramInt).farmSize);
+                memberImage.setMfilePath(memberArrayList.get(paramInt).memberImage);
+                GlideApp.with(MainActivityNewFGD.this).load("http://" + memberArrayList.get(paramInt).memberImage)
+                        .dontAnimate()
+                        .thumbnail(0.5f)
+                        .placeholder(R.drawable.file)
+                        .into(memberImage);
+            }
 
-        FloatingTextButton addMember = (FloatingTextButton) findViewById(R.id.addMember);
-        FloatingTextButton cancelMember = (FloatingTextButton) findViewById(R.id.cancelBtn);
+            public void onLongClick(View paramView, int paramInt) {
+            }
+        }));
+
 
         addMember.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (lastMemberPosition != -1) {
+                    memberArrayList.remove(lastMemberPosition);
+                }
                 if (memberName.getText().toString().length() > 0
                         && sex.getText().toString().length() > 0
                         && idType.getText().toString().length() > 0
@@ -777,6 +840,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                         && mobile.getText().toString().length() > 0
                         ) {
                     memberArrayList.add(new Member(
+                            memberImage.getMfilePath() == null ? "" : memberImage.getMfilePath(),
                             memberName.getText().toString(),
                             sex.getText().toString(),
                             mobile.getText().toString(),
@@ -784,34 +848,95 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                             farmSize.getText().toString()
                     ));
                     memberAdapter.notifyData(memberArrayList);
+                    lastMemberPosition = -1;
+                    memberImage.setMfilePath("");
+                    memberImage.setMfilePath("");
+                    memberName.setText("");
+                    sex.setText("");
+                    mobile.setText("");
+                    idType.setText("");
+                    farmSize.setText("");
+                    addMember.setTitle("Add");
                 }
+
             }
         });
 
         cancelMember.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                lastMemberPosition = -1;
+                memberImage.setMfilePath("");
                 memberName.setText("");
                 sex.setText("");
                 mobile.setText("");
                 idType.setText("");
                 farmSize.setText("");
+                addMember.setTitle("Add");
             }
         });
 
+        memberImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageutils.imagepicker(105);
+                imageutils.setImageAttachmentListener(new Imageutils.ImageAttachmentListener() {
+                    @Override
+                    public void image_attachment(int from, String filename, Bitmap file, Uri uri) {
+                        String path = Environment.getExternalStorageDirectory() + File.separator + "ImageAttach" + File.separator;
+                        Base base = new Base();
+                        base.setUrl(imageutils.getPath(uri));
+                        base.setIsImage("false");
+                        if (filename != null) {
+                            base.setIsImage("true");
+                            imageutils.createImage(file, filename, path, false);
+                        }
+                        Map<String, String> dataMap = new HashMap<>();
+                        dataMap.put("count", String.valueOf(11));
+                        dataMap.put("url", imageutils.getPath(uri));
+                        dataMap.put("isImage", base.getIsImage());
+
+                        memberImage.setMfilePath(imageutils.getPath(uri));
+                        memberImage.setIsImage(dataMap.get("isImage"));
+                        GlideApp.with(MainActivityNewFGD.this).load(imageutils.getPath(uri))
+                                .dontAnimate()
+                                .thumbnail(0.5f)
+                                .placeholder(R.drawable.file)
+                                .into(memberImage);
+                    }
+                });
+            }
+        });
+
+        FloatingTextButton addVillage = (FloatingTextButton) findViewById(R.id.addVillage);
+        FloatingTextButton cancelVillage = (FloatingTextButton) findViewById(R.id.cancelVillageBtn);
 
         villageList = (RecyclerView) findViewById(R.id.villageList);
         villageAdapter = new VillageAdapter(this, villageArrayList, this);
         final LinearLayoutManager r1ate = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         villageList.setLayoutManager(r1ate);
         villageList.setAdapter(villageAdapter);
+        villageList.addOnItemTouchListener(new RecyclerTouchListener(MainActivityNewFGD.this,
+                villageList, new RecyclerTouchListener.ClickListener() {
+            public void onClick(View paramView, int paramInt) {
+                lastVillagePosition = paramInt;
+                addVillage.setTitle("Update");
+                nameVillagesHamlets.setText(villageArrayList.get(paramInt).nameVillagesHamlets);
+                numberOfHouseholds.setText(villageArrayList.get(paramInt).numberOfHouseholds);
+            }
 
-        FloatingTextButton addVillage = (FloatingTextButton) findViewById(R.id.addVillage);
-        FloatingTextButton cancelVillage = (FloatingTextButton) findViewById(R.id.cancelVillageBtn);
+            public void onLongClick(View paramView, int paramInt) {
+            }
+        }));
+
 
         addVillage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (lastVillagePosition != -1) {
+                    villageArrayList.remove(lastVillagePosition);
+                }
+
                 if (nameVillagesHamlets.getText().toString().length() > 0
                         && numberOfHouseholds.getText().toString().length() > 0
 
@@ -821,6 +946,9 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                             numberOfHouseholds.getText().toString()
                     ));
                     villageAdapter.notifyData(villageArrayList);
+                    lastVillagePosition = -1;
+                    nameVillagesHamlets.setText("");
+                    numberOfHouseholds.setText("");
                 }
             }
         });
@@ -830,7 +958,7 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
             public void onClick(View v) {
                 nameVillagesHamlets.setText("");
                 numberOfHouseholds.setText("");
-
+                lastVillagePosition = -1;
             }
         });
 
@@ -891,9 +1019,9 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                         address.getText().toString(),
                         timeStarted.getText().toString(),
                         village.getText().toString(),
-                        gramPanchayat.getText().toString(),
-                        mandal.getText().toString(),
-                        district.getText().toString(),
+                        gramPanchayat.getSelectedItem().toString(),
+                        mandal.getSelectedItem().toString(),
+                        district.getSelectedItem().toString(),
                         memberName.getText().toString(),
                         sex.getText().toString(),
                         mobile.getText().toString(),
@@ -1073,10 +1201,26 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 Log.e("xxxxxxxxxxxxx", jsonVal);
                 if (mainFGD == null) {
                     tempmainbean.setId(String.valueOf(System.currentTimeMillis()));
+                    dbHelperSurvey.insertSurvey(String.valueOf(System.currentTimeMillis()),
+                            sharedpreferences.getString(buSurveyerId, ""), new Gson().toJson(tempmainbean));
+                    Toast.makeText(getApplicationContext(), "Recorded successFully", Toast.LENGTH_SHORT).show();
+
                 } else {
                     tempmainbean.setId(mainFGD.id);
+
+                    int i = dbHelperSurvey.updateNote(mainFGD.id, sharedpreferences.getString(buSurveyerId, "")
+                            , new Gson().toJson(tempmainbean));
+                    if (i > 0) {
+                        Toast.makeText(getApplicationContext(),
+                                "Updated successFully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        dbHelperSurvey.insertSurvey(String.valueOf(System.currentTimeMillis()),
+                                sharedpreferences.getString(buSurveyerId, ""), new Gson().toJson(tempmainbean));
+                        Toast.makeText(getApplicationContext(), "Recorded successFully", Toast.LENGTH_SHORT).show();
+                    }
                 }
-                getCreateTest(tempmainbean.id, sharedpreferences.getString(buSurveyerId, ""), jsonVal);
+                finish();
+                //getCreateTest(tempmainbean.id, sharedpreferences.getString(buSurveyerId, ""), jsonVal);
             }
         });
 
@@ -1090,9 +1234,9 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                 address.setText(mainFGD.address);
                 timeStarted.setText(mainFGD.timeStarted);
                 village.setText(mainFGD.village);
-                gramPanchayat.setText(mainFGD.gramPanchayat);
-                mandal.setText(mainFGD.mandal);
-                district.setText(mainFGD.district);
+                gramPanchayat.setPrompt(mainFGD.gramPanchayat);
+                mandal.setPrompt(mainFGD.mandal);
+                district.setPrompt(mainFGD.district);
                 memberName.setText(mainFGD.memberName);
                 sex.setText(mainFGD.sex);
                 mobile.setText(mainFGD.mobile);
@@ -1325,12 +1469,12 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                     bases10 = mainFGD.bases10;
                     attachmentBase10Adapter.notifyData(bases10);
                 }
-                if(mainFGD.memberArrayList!=null){
-                    memberArrayList=mainFGD.memberArrayList;
+                if (mainFGD.memberArrayList != null) {
+                    memberArrayList = mainFGD.memberArrayList;
                     memberAdapter.notifyData(memberArrayList);
                 }
-                if(mainFGD.villageArrayList!=null){
-                    villageArrayList=mainFGD.villageArrayList;
+                if (mainFGD.villageArrayList != null) {
+                    villageArrayList = mainFGD.villageArrayList;
                     villageAdapter.notifyData(villageArrayList);
                 }
                 georefresh.setVisibility(View.INVISIBLE);
@@ -1340,13 +1484,94 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
             Log.e("xxxxxx", "Something went wrong");
         }
 
+
+        try {
+            JSONObject jsonObject = new JSONObject(loadJSONFromAsset());
+            Iterator<String> keys = jsonObject.keys();
+            DISTRICTS = toArray(keys);
+            ArrayAdapter aa = new ArrayAdapter(this, android.R.layout.simple_spinner_item, DISTRICTS);
+            aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            //Setting the ArrayAdapter data on the Spinner
+            district.setAdapter(aa);
+            if(mainFGD!=null) {
+                districtTxt.setText("DISTRICT : ("+mainFGD.getDistrict()+")");
+                setSpinText(district,mainFGD.getDistrict());
+            }
+
+            district.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    String item = district.getSelectedItem().toString();
+                    try {
+                        final JSONObject mandalJson = jsonObject.getJSONObject(item);
+                        Iterator<String> keys = mandalJson.keys();
+                        MANDALS = toArray(keys);
+
+                        ArrayAdapter unitAdapter = new ArrayAdapter(MainActivityNewFGD.this, android.R.layout.simple_spinner_item, MANDALS);
+                        unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        //Setting the ArrayAdapter data on the Spinner
+                        mandal.setAdapter(unitAdapter);
+                        if(mainFGD!=null) {
+                            mandalTxt.setText("MANDAL : ("+mainFGD.getMandal()+")");
+                            setSpinText(mandal,mainFGD.getMandal());
+                        }
+                        mandal.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                String mandalItem = mandal.getSelectedItem().toString();
+                                try {
+                                    JSONArray subchapterJson = mandalJson.getJSONArray(mandalItem);
+                                    GPS = toStringArray(subchapterJson);
+                                    if (GPS.length == 0) {
+                                        GPS = new String[]{
+                                                "No Gps"
+                                        };
+                                    }
+                                    ArrayAdapter subchapterAdapter = new ArrayAdapter(MainActivityNewFGD.this,
+                                            android.R.layout.simple_spinner_item, GPS);
+                                    subchapterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    //Setting the ArrayAdapter data on the Spinner
+                                    gramPanchayat.setAdapter(subchapterAdapter);
+                                    if(mainFGD!=null) {
+                                        gpTxt.setText("GP : ("+mainFGD.getGramPanchayat()+")");
+                                        setSpinText(gramPanchayat,mainFGD.getGramPanchayat());
+                                    }
+                                } catch (Exception e) {
+                                    Log.e("Error", e.toString());
+                                }
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> adapterView) {
+
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        Log.e("Error", e.toString());
+                    }
+
+                }
+
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+
+            Log.e("Json object", jsonObject.toString());
+        } catch (Exception e) {
+            Log.e("Error", e.toString());
+        }
+
+
+
     }
 
 
     private void getCreateTest(final String mId, final String surveyer, final String data) {
         this.pDialog.setMessage("Creating...");
         showDialog();
-        StringRequest local16 = new StringRequest(1, "http://climatesmartcity.com/UBA/pwcfgd.php", new Response.Listener<String>() {
+        StringRequest local16 = new StringRequest(1, AppConfig.URL_CREATE_PWCFGD, new Response.Listener<String>() {
             public void onResponse(String paramString) {
                 Log.d("tag", "Register Response: " + paramString.toString());
                 hideDialog();
@@ -1493,22 +1718,22 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == 1) {
+        if (requestCode == 12) {
             if (resultCode == Activity.RESULT_OK) {
                 audioUrl1 = data.getStringExtra("result");
                 play1.setVisibility(View.VISIBLE);
             }
-        } else if (requestCode == 2) {
+        } else if (requestCode == 13) {
             if (resultCode == Activity.RESULT_OK) {
                 audioUrl2 = data.getStringExtra("result");
                 play2.setVisibility(View.VISIBLE);
             }
-        } else if (requestCode == 3) {
+        } else if (requestCode == 14) {
             if (resultCode == Activity.RESULT_OK) {
                 audioUrl3 = data.getStringExtra("result");
                 play3.setVisibility(View.VISIBLE);
             }
-        } else if (requestCode == 4) {
+        } else if (requestCode == 15) {
             if (resultCode == Activity.RESULT_OK) {
                 audioUrl4 = data.getStringExtra("result");
                 play4.setVisibility(View.VISIBLE);
@@ -1549,10 +1774,11 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
     }//onActivityResult
 
 
-    private void startPlay(String url) {
+    private void startPlay(String url, String name) {
         Intent localIntent = new Intent(MainActivityNewFGD.this, MainActivityAudio.class);
         localIntent.putExtra("filePath", "http://" + url);
         localIntent.putExtra("isImage", false);
+        localIntent.putExtra("name", name);
         startActivity(localIntent);
     }
 
@@ -1575,41 +1801,79 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                     dataMap.put("count", String.valueOf(count));
                     dataMap.put("url", imageutils.getPath(uri));
                     dataMap.put("isImage", base.getIsImage());
-                    showDialog();
-                    new UploadImageToServer().execute(dataMap);
+                    if (dataMap.get("count").equals("12")) {
+                        bases1.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase1Adapter.notifyDataItem(bases1, bases1.size() + 1);
+                    } else if (dataMap.get("count").equals("13")) {
+                        bases2.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase2Adapter.notifyDataItem(bases2, bases2.size() + 1);
+                    } else if (dataMap.get("count").equals("14")) {
+                        bases3.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase3Adapter.notifyDataItem(bases3, bases3.size() + 1);
+                    } else if (dataMap.get("count").equals("15")) {
+                        bases4.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase4Adapter.notifyDataItem(bases4, bases4.size() + 1);
+                    } else if (dataMap.get("count").equals("5")) {
+                        bases5.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase5Adapter.notifyDataItem(bases5, bases5.size() + 1);
+                    } else if (dataMap.get("count").equals("6")) {
+                        bases6.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase6Adapter.notifyDataItem(bases6, bases6.size() + 1);
+                    } else if (dataMap.get("count").equals("7")) {
+                        bases7.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase7Adapter.notifyDataItem(bases7, bases7.size() + 1);
+                    } else if (dataMap.get("count").equals("8")) {
+                        bases8.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase8Adapter.notifyDataItem(bases8, bases8.size() + 1);
+                    } else if (dataMap.get("count").equals("9")) {
+                        bases9.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase9Adapter.notifyDataItem(bases9, bases9.size() + 1);
+                    } else if (dataMap.get("count").equals("10")) {
+                        bases10.add(new Base(imageutils.getPath(uri), dataMap.get("isImage")));
+                        attachmentBase10Adapter.notifyDataItem(bases10, bases10.size() + 1);
+                    } else if (dataMap.get("count").equals("11")) {
+                        memberImage.setMfilePath(imageutils.getPath(uri));
+                        memberImage.setIsImage(dataMap.get("isImage"));
+                        GlideApp.with(MainActivityNewFGD.this).load(imageutils.getPath(uri))
+                                .dontAnimate()
+                                .thumbnail(0.5f)
+                                .placeholder(R.drawable.file)
+                                .into(memberImage);
+                    }
+
                 }
             });
         } else {
             Intent localIntent = new Intent(MainActivityNewFGD.this, ActivityMediaOnline.class);
-            if (count == 1) {
-                localIntent.putExtra("filePath", "http://" + bases1.get(position).getUrl());
+            if (count == 12) {
+                localIntent.putExtra("filePath", bases1.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases1.get(position).getIsImage()));
-            } else if (count == 2) {
-                localIntent.putExtra("filePath", "http://" + bases2.get(position).getUrl());
+            } else if (count == 13) {
+                localIntent.putExtra("filePath", bases2.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases2.get(position).getIsImage()));
-            } else if (count == 3) {
-                localIntent.putExtra("filePath", "http://" + bases3.get(position).getUrl());
+            } else if (count == 14) {
+                localIntent.putExtra("filePath", bases3.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases3.get(position).getIsImage()));
-            } else if (count == 4) {
-                localIntent.putExtra("filePath", "http://" + bases4.get(position).getUrl());
+            } else if (count == 15) {
+                localIntent.putExtra("filePath", bases4.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases4.get(position).getIsImage()));
             } else if (count == 5) {
-                localIntent.putExtra("filePath", "http://" + bases5.get(position).getUrl());
+                localIntent.putExtra("filePath", bases5.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases5.get(position).getIsImage()));
             } else if (count == 6) {
-                localIntent.putExtra("filePath", "http://" + bases6.get(position).getUrl());
+                localIntent.putExtra("filePath", bases6.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases6.get(position).getIsImage()));
             } else if (count == 7) {
-                localIntent.putExtra("filePath", "http://" + bases7.get(position).getUrl());
+                localIntent.putExtra("filePath", bases7.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases7.get(position).getIsImage()));
             } else if (count == 8) {
-                localIntent.putExtra("filePath", "http://" + bases8.get(position).getUrl());
+                localIntent.putExtra("filePath", bases8.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases8.get(position).getIsImage()));
             } else if (count == 9) {
-                localIntent.putExtra("filePath", "http://" + bases9.get(position).getUrl());
+                localIntent.putExtra("filePath", bases9.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases9.get(position).getIsImage()));
             } else if (count == 10) {
-                localIntent.putExtra("filePath", "http://" + bases10.get(position).getUrl());
+                localIntent.putExtra("filePath", bases10.get(position).getUrl());
                 localIntent.putExtra("isImage", Boolean.parseBoolean(bases10.get(position).getIsImage()));
             }
             startActivity(localIntent);
@@ -1720,16 +1984,16 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                     } else {
                         imageUrl = AppConfig.ipcloud + "/uploads/video/" + imageutils.getfilename_from_path(dataMap.get("url"));
                     }
-                    if (dataMap.get("count").equals("1")) {
+                    if (dataMap.get("count").equals("12")) {
                         bases1.add(new Base(imageUrl, dataMap.get("isImage")));
                         attachmentBase1Adapter.notifyDataItem(bases1, bases1.size() + 1);
-                    } else if (dataMap.get("count").equals("2")) {
+                    } else if (dataMap.get("count").equals("13")) {
                         bases2.add(new Base(imageUrl, dataMap.get("isImage")));
                         attachmentBase2Adapter.notifyDataItem(bases2, bases2.size() + 1);
-                    } else if (dataMap.get("count").equals("3")) {
+                    } else if (dataMap.get("count").equals("14")) {
                         bases3.add(new Base(imageUrl, dataMap.get("isImage")));
                         attachmentBase3Adapter.notifyDataItem(bases3, bases3.size() + 1);
-                    } else if (dataMap.get("count").equals("4")) {
+                    } else if (dataMap.get("count").equals("15")) {
                         bases4.add(new Base(imageUrl, dataMap.get("isImage")));
                         attachmentBase4Adapter.notifyDataItem(bases4, bases4.size() + 1);
                     } else if (dataMap.get("count").equals("5")) {
@@ -1750,6 +2014,15 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
                     } else if (dataMap.get("count").equals("10")) {
                         bases10.add(new Base(imageUrl, dataMap.get("isImage")));
                         attachmentBase10Adapter.notifyDataItem(bases10, bases10.size() + 1);
+                    } else if (dataMap.get("count").equals("11")) {
+                        memberImage.setMfilePath(imageUrl);
+                        memberImage.setIsImage(dataMap.get("isImage"));
+
+                        GlideApp.with(MainActivityNewFGD.this).load("http://" + imageUrl)
+                                .dontAnimate()
+                                .thumbnail(0.5f)
+                                .placeholder(R.drawable.file)
+                                .into(memberImage);
                     }
                 }
                 Toast.makeText(getApplicationContext(), jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
@@ -1765,7 +2038,54 @@ public class MainActivityNewFGD extends AppCompatActivity implements BaseClick,
             super.onPostExecute(result);
         }
 
+
     }
 
 
+    public String loadJSONFromAsset() {
+        String json = null;
+        try {
+            InputStream is = getAssets().open("cites.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+    }
+
+    public static String[] toArray(Iterator<String> itr) {
+        ArrayList<String> ret = new ArrayList<>();
+        while (itr.hasNext()) {
+            ret.add(itr.next());
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
+
+    public static String[] toStringArray(JSONArray array) {
+        if (array == null)
+            return null;
+
+        String[] arr = new String[array.length()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = array.optString(i);
+        }
+        return arr;
+    }
+
+    public void setSpinText(Spinner spin, String text)
+    {
+        for(int i= 0; i < spin.getAdapter().getCount(); i++)
+        {
+            if(spin.getAdapter().getItem(i).toString().contains(text))
+            {
+                spin.setSelection(i);
+            }
+        }
+
+    }
 }

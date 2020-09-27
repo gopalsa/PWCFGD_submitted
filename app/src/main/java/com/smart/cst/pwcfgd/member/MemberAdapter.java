@@ -9,9 +9,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.smart.cst.pwcfgd.Avgwage;
-import com.smart.cst.pwcfgd.MainActivityFGD;
-import com.smart.cst.pwcfgd.OnFGDItemClick;
 import com.smart.cst.pwcfgd.R;
 
 import java.util.ArrayList;
@@ -27,16 +24,16 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyViewHold
     private MemberClick onFGDItemClick;
 
 
+    public class MyViewHolder extends RecyclerView.ViewHolder {
 
-    public class MyViewHolder extends RecyclerView.ViewHolder{
-
-        private TextView name,sex;
+        private TextView name, sex, count;
         LinearLayout parentLinear;
 
-        public MyViewHolder(View view){
+        public MyViewHolder(View view) {
             super((view));
-            name =(TextView) view.findViewById(R.id.name);
-            sex =(TextView) view.findViewById(R.id.sex);
+            name = (TextView) view.findViewById(R.id.name);
+            sex = (TextView) view.findViewById(R.id.sex);
+            count = (TextView) view.findViewById(R.id.count);
             parentLinear = (LinearLayout) view.findViewById(R.id.parentLinear);
         }
     }
@@ -44,7 +41,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyViewHold
     public MemberAdapter(Context mainActivityUser, ArrayList<Member> avgwageList, MemberClick onItemClick) {
         this.mainActivityUser = mainActivityUser;
         this.memberArrayList = avgwageList;
-        this.onFGDItemClick =  onItemClick;
+        this.onFGDItemClick = onItemClick;
     }
 
     public void notifyData(ArrayList<Member> myList) {
@@ -52,6 +49,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyViewHold
         this.memberArrayList = myList;
         notifyDataSetChanged();
     }
+
     public MemberAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.memberow, parent, false);
@@ -64,7 +62,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyViewHold
         Member bean = memberArrayList.get(position);
         holder.name.setText(bean.memberName);
         holder.sex.setText(bean.sex);
-
+        holder.count.setText(String.valueOf(position + 1));
 
         holder.parentLinear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,7 +71,8 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MyViewHold
             }
         });
     }
-    public  int getItemCount(){
+
+    public int getItemCount() {
         return memberArrayList.size();
     }
 

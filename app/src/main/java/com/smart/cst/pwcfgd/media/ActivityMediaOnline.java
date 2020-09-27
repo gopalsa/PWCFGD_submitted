@@ -43,8 +43,10 @@ public class ActivityMediaOnline extends AppCompatActivity {
         if (paramBoolean) {
             this.imgPreview.setVisibility(View.VISIBLE);
             this.vidPreview.setVisibility(View.GONE);
-            final String url = filePath.replace("small", "big");
-
+             String url = filePath.replace("small", "big");
+            if (filePath.startsWith("coconut")) {
+                url = "http://" + url ;
+            }
             GlideApp.with(getApplicationContext())
                     .load(url)
                     .dontAnimate()
@@ -55,7 +57,7 @@ public class ActivityMediaOnline extends AppCompatActivity {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
 
-                            Log.e("TAG", "Load failed " + url, e);
+                            Log.e("TAG", "Load failed " , e);
 
                             // Logs the individual causes:
                             for (Throwable t : e.getRootCauses()) {
@@ -69,7 +71,7 @@ public class ActivityMediaOnline extends AppCompatActivity {
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             //loaded do something
-                            Log.e("TAG", "ready " + url);
+                            Log.e("TAG", "ready " );
                             return false;
                         }
                     })
@@ -119,7 +121,7 @@ public class ActivityMediaOnline extends AppCompatActivity {
         boolean bool = localIntent.getBooleanExtra("isImage", true);
         if (this.filePath != null) {
             previewMedia(bool);
-            String value=filePath.substring( filePath.lastIndexOf('/')+1, filePath.length() );
+            String value = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
             getSupportActionBar().setTitle(value);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             return;

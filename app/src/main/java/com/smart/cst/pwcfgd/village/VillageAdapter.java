@@ -29,12 +29,13 @@ public class VillageAdapter extends RecyclerView.Adapter<VillageAdapter.MyViewHo
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        private TextView name,numberOfHouseholds;
+        private TextView name,numberOfHouseholds,count;
         LinearLayout parentLinear;
 
         public MyViewHolder(View view){
             super((view));
             name =(TextView) view.findViewById(R.id.name);
+            count = (TextView) view.findViewById(R.id.count);
             numberOfHouseholds =(TextView) view.findViewById(R.id.numberOfHouseholds);
             parentLinear = (LinearLayout) view.findViewById(R.id.parentLinear);
         }
@@ -53,7 +54,7 @@ public class VillageAdapter extends RecyclerView.Adapter<VillageAdapter.MyViewHo
     }
     public VillageAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.memberow, parent, false);
+                .inflate(R.layout.villagerow, parent, false);
 
         return new VillageAdapter.MyViewHolder(itemView);
     }
@@ -63,6 +64,7 @@ public class VillageAdapter extends RecyclerView.Adapter<VillageAdapter.MyViewHo
         Village bean = memberArrayList.get(position);
         holder.name.setText(bean.nameVillagesHamlets);
         holder.numberOfHouseholds.setText(bean.numberOfHouseholds);
+        holder.count.setText(String.valueOf(position + 1));
 
 
         holder.parentLinear.setOnClickListener(new View.OnClickListener() {
